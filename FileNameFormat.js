@@ -9,30 +9,35 @@ module.exports = class FileNameFormat {
 
     /**
      * 递归遍历文件夹
-     * @param {String} folderPath 文件夹
+     * @param {String} filePath 文件夹或文件名
      * @param {Function} callback 回调函数
      */
-    traverseFolder(folderPath, callback) {
-        // 获取文件夹内所有文件和文件夹
-        const items = fs.readdirSync(folderPath);
+    traverseFolder(filePath, callback) {
 
-        // 遍历每一个文件或文件夹
-        items.forEach(item => {
-            // 构建完整的路径
-            const itemPath = path.join(folderPath, item);
+        // 将路径中的反斜杠“\”替换为斜杠“/”
+        filePath = filePath.replace(/\\/g, '/');
 
-            // 检查当前路径是文件还是文件夹
-            const stats = fs.statSync(itemPath);
+        // 检查当前路径是文件还是文件夹，如果是文件夹，则递归调用 traverseFolder 函数
+        const stats = fs.statSync(filePath);
 
-            // 如果是文件夹，则递归调用 traverseFolder 函数
-            if (stats.isDirectory()) {
+        if (stats.isDirectory()) {
+
+            // 获取文件夹内所有文件和文件夹
+            const items = fs.readdirSync(filePath);
+
+            // 遍历每一个文件或文件夹
+            items.forEach(item => {
+                // 构建完整的路径
+                const itemPath = path.join(filePath, item);
+
                 this.traverseFolder(itemPath, callback);
-            }
-            // 如果是文件，则打印文件名
-            else {
-                callback(item, itemPath);
-            }
-        });
+            });
+        }
+        // 如果是文件，则打印文件名
+        else {
+            let fileName = filePath.split('/').pop();
+            callback(fileName, filePath);
+        }
     }
 
     /**
@@ -48,21 +53,21 @@ module.exports = class FileNameFormat {
     /**
      * 替换文件内容
      * @param {String} filePath 
-     * @param {String} searchStr 
-     * @param {String} replacer 
      */
-    replaceFileContent(filePath, searchStr, replacer) {
+    replaceFileContent(filePath) {
         try {
             // 同步读取文件内容
             let content = fs.readFileSync(filePath, 'utf8');
 
-            // 将searchStr字符串替换为replacer
-            content = content.replace(new RegExp(searchStr), replacer);
+            for (let [searchStr, replacer] of this.fileNameMap) {
+
+                // 将searchStr字符串替换为replacer
+                content = content.replace(new RegExp(searchStr, 'gmui'), replacer);
+
+            }
 
             // 将替换后的内容写回文件
             fs.writeFileSync(filePath, content, 'utf8');
-
-            // console.log('文件内容替换成功');
         } catch (err) {
             console.error('文件内容替换失败:', err);
         }
@@ -79,7 +84,6 @@ module.exports = class FileNameFormat {
         // 递归遍历资源文件夹
         this.traverseFolder(resFolder, (fileName, filePath) => {
             let randomFileName = this.genRandomFileName(fileName);
-            // console.log(`${fileName}\r\n${filePath}\r\n${randomFileName}`);
 
             // 如果文件名满足一定规则，则不做转换
             if (/\d{13}_\w{32}\.\w{1,4}/.test(fileName)) return;
@@ -93,13 +97,15 @@ module.exports = class FileNameFormat {
             }
         })
 
-        // console.log(this.fileNameMap, this.fileNameMap.size);
+        try {
+            fs.writeFileSync('./fileNameMap.json', JSON.stringify(Array.from(this.fileNameMap)));
+        } catch (err) {
+            console.error('文件内容写入失败:', err);
+        }
 
         // 递归遍历代码文件夹
         this.traverseFolder(codeFolder, (fileName, filePath) => {
-            for (let [originFileName, randomFileName] of this.fileNameMap) {
-                this.replaceFileContent(filePath, originFileName, randomFileName);
-            }
+            this.replaceFileContent(filePath);
         })
     }
 }
