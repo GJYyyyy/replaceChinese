@@ -1,10 +1,6 @@
+// 引入核心类
 const FileNameFormat = require('./FileNameFormat');
-
+// 实例化
 const fnFormat = new FileNameFormat();
 
-
-// 使用示例
-const resFolder = 'D:/gjy/ceyu/yuannei_web_rail/static/monitorV2/img';
-const codeFolder = 'D:/gjy/ceyu/yuannei_web_rail/src/views/monitor'
-
-fnFormat.format(resFolder, codeFolder);
+// 具体操作

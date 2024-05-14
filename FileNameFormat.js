@@ -75,18 +75,16 @@ module.exports = class FileNameFormat {
 
     /**
      * 格式化文件名
-     * 将资源文件夹里的文件的文件名格式化，并且将代码文件夹里引用到的资源文件名同步更改
+     * 将资源文件夹里的文件的文件名格式化
      * @param {String} resFolder 资源文件夹
-     * @param {String} codeFolder 代码文件夹
      */
-    format(resFolder, codeFolder) {
-
+    formatRes(resFolder) {
         // 递归遍历资源文件夹
         this.traverseFolder(resFolder, (fileName, filePath) => {
             let randomFileName = this.genRandomFileName(fileName);
 
             // 如果文件名满足一定规则，则不做转换
-            if (/\d{13}_\w{32}\.\w{1,4}/.test(fileName)) return;
+            if (/^\d{13}_\w{32}\.\w{1,4}$/.test(fileName)) return;
 
             try {
                 fs.renameSync(filePath, filePath.replace(fileName, randomFileName));
@@ -102,10 +100,28 @@ module.exports = class FileNameFormat {
         } catch (err) {
             console.error('文件内容写入失败:', err);
         }
+    }
 
+    /**
+     * 格式化文件名
+     * 将代码文件夹里引用到的资源文件名同步更改
+     * @param {String} codeFolder 代码文件夹
+     */
+    formatCode(codeFolder) {
         // 递归遍历代码文件夹
         this.traverseFolder(codeFolder, (fileName, filePath) => {
             this.replaceFileContent(filePath);
         })
+    }
+
+    /**
+     * 格式化文件名
+     * 将资源文件夹里的文件的文件名格式化，并且将代码文件夹里引用到的资源文件名同步更改
+     * @param {String} resFolder 资源文件夹
+     * @param {String} codeFolder 代码文件夹
+     */
+    format(resFolder, codeFolder) {
+        this.formatRes(resFolder);
+        this.formatCode(codeFolder);
     }
 }
