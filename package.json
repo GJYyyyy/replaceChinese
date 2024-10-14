@@ -1,0 +1,23 @@
+{
+  "name": "replacechinese",
+  "version": "1.0.0",
+  "description": "该项目是专门用来将命名不规范的文件名替换为符合规范的文件名的。  \r 起初是公司要求项目引用的文件名是不能有中文的，所以写了这个项目。",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GJYyyyy/replaceChinese.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GJYyyyy/replaceChinese/issues"
+  },
+  "homepage": "https://github.com/GJYyyyy/replaceChinese#readme",
+  "dependencies": {
+    "isbinaryfile": "^5.0.2",
+    "md5": "^2.3.0"
+  }
+}
