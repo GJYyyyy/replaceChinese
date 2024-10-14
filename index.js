@@ -4,22 +4,25 @@ const FileNameFormat = require('./src/FileNameFormat');
 const fnFormat = new FileNameFormat();
 
 // 具体操作
-const folders = [
-    [
-        'D:/gjy/ceyu/jujia_hospital/src/assets/accstic',
-        "D:/gjy/ceyu/jujia_hospital/static2/monitor4"
-    ],
-    [
-        'D:/gjy/ceyu/jujia_hospital/static',
-        "D:/gjy/ceyu/jujia_hospital/static2/monitor4"
-    ],
-    [
-        'D:/gjy/ceyu/jujia_hospital/static2/monitor4/img',
-        "D:/gjy/ceyu/jujia_hospital/static2"
-    ],
+const replaces = [
+    {
+        whiteList: [],
+        resFolder: 'D:/gjy/ceyu/jujia_hospital/static2/monitor4/img',
+        codeFolder: "D:/gjy/ceyu/jujia_hospital/static2",
+    },
+    {
+        whiteList: ['custom.scss', 'customElementUI.scss', 'customMonitor.scss'],
+        resFolder: 'D:/gjy/ceyu/jujia_hospital/src/assets',
+        codeFolder: "D:/gjy/ceyu/jujia_hospital/src",
+    },
+    {
+        whiteList: [],
+        resFolder: 'D:/gjy/ceyu/jujia_hospital/static',
+        codeFolder: "D:/gjy/ceyu/jujia_hospital/src",
+    },
 ]
 
-let folder = folders[2];
+let replace = replaces[2];
 
-fnFormat.format(folder[0], folder[1]);
-// fnFormat.formatRes(folder[0]);
+fnFormat.setResWhiteList(replace.whiteList);
+fnFormat.format(replace.resFolder, replace.codeFolder);

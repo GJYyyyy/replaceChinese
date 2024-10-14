@@ -5,25 +5,23 @@ const isBinaryFile = require('isbinaryfile').isBinaryFile;
 
 module.exports = class FileNameFormat {
     // 原文件名和随机文件名的映射表
-    fileNameMap = new Map();
-    fileNameMapFileName = 'fileNameMap.json';
-    logFileName = 'log.txt';
-    refFileFormatRule = /^\d{13}_\w{32}\.\w{1,4}$/;
-    resFolder = '';
-    codeFolder = '';
-    whiteList = [];
-    encoding = 'utf8';
+    #fileNameMap = new Map();
+    #fileNameMapFileName = 'fileNameMap.json';
+    #logFileName = 'log.txt';
+    #resFileFormatRule = /^\d{13}_\w{32}\.\w{1,4}$/;
+    #whiteList = [];
+    #encoding = 'utf8';
 
     #log(...txts) {
         console.log(...txts);
         for (let txt of txts) {
             if (txt instanceof Error) txt = txt.toString();
-            fs.appendFileSync(this.logFileName, `${txt}\r\n\r\n`);
+            fs.appendFileSync(this.#logFileName, `${txt}\r\n\r\n`);
         }
     }
 
     #init() {
-        fs.writeFileSync(this.logFileName, '');
+        fs.writeFileSync(this.#logFileName, '');
     }
 
     /**
@@ -148,12 +146,12 @@ module.exports = class FileNameFormat {
             } else {
                 try {
                     // 同步读取文件内容
-                    let content = fs.readFileSync(filePath, this.encoding);
+                    let content = fs.readFileSync(filePath, this.#encoding);
 
-                    for (let [oldFileName, newFileName] of this.fileNameMap) content = this.#replaceOneRes(content, oldFileName, newFileName);
+                    for (let [oldFileName, newFileName] of this.#fileNameMap) content = this.#replaceOneRes(content, oldFileName, newFileName);
 
                     // 将替换后的内容写回文件
-                    fs.writeFileSync(filePath, content, this.encoding);
+                    fs.writeFileSync(filePath, content, this.#encoding);
 
                 } catch (err) {
                     this.#log(`文件内容替换失败:${err.toString()}`);
@@ -165,11 +163,11 @@ module.exports = class FileNameFormat {
     }
 
     #bubbleSort() {
-        let arr = Array.from(this.fileNameMap);
+        let arr = Array.from(this.#fileNameMap);
 
         let arrSorted = arr.sort((a, b) => b[0].length - a[0].length);
 
-        this.fileNameMap = new Map(arrSorted);
+        this.#fileNameMap = new Map(arrSorted);
     }
 
     /**
@@ -177,7 +175,7 @@ module.exports = class FileNameFormat {
      * @param {Arrar} whiteList 
      */
     setResWhiteList(whiteList) {
-        this.whiteList = whiteList;
+        this.#whiteList = whiteList;
     }
 
     /**
@@ -185,11 +183,10 @@ module.exports = class FileNameFormat {
      * @param {String} codeFolder 代码文件夹
      */
     formatCode(codeFolder, flag = false) {
-        this.codeFolder = codeFolder;
 
         if (flag === false) {
-            let fileNameMapContent = fs.readFileSync(this.fileNameMapFileName, this.encoding);
-            this.fileNameMap = new Map(JSON.parse(fileNameMapContent));
+            let fileNameMapContent = fs.readFileSync(this.#fileNameMapFileName, this.#encoding);
+            this.#fileNameMap = new Map(JSON.parse(fileNameMapContent));
         }
 
         // 递归遍历代码文件夹
@@ -201,20 +198,19 @@ module.exports = class FileNameFormat {
     /**
      * 格式化资源文件名
      * 将资源文件夹里的文件的文件名格式化
-     * @param {String} resFolder 资源文件夹
+     * @param {String} #resFolder 资源文件夹
      */
     formatRes(resFolder) {
         this.#init();
-        this.resFolder = resFolder;
         // 递归遍历资源文件夹
         this.#traverseFolder(resFolder, (fileName, filePath) => {
             let randomFileName = this.#genRandomFileName(fileName);
 
             // 如果文件名满足一定规则，则不做转换
-            if (this.refFileFormatRule.test(fileName)) return;
+            if (this.#resFileFormatRule.test(fileName)) return;
 
             // 如果是白名单文件，则不做转换
-            if (this.whiteList.includes(fileName)) return;
+            if (this.#whiteList.includes(fileName)) return;
 
             try {
                 fs.renameSync(filePath, filePath.replace(fileName, randomFileName));
@@ -222,7 +218,7 @@ module.exports = class FileNameFormat {
                 let closestPathname = this.#getClosestPath(filePath);
 
                 // 添加文件名映射表
-                this.fileNameMap.set(`${closestPathname}/${fileName}`, `${closestPathname}/${randomFileName}`);
+                this.#fileNameMap.set(`${closestPathname}/${fileName}`, `${closestPathname}/${randomFileName}`);
             } catch (err) {
                 this.#log(`文件重命名失败:${err.toString()}`);
             }
@@ -231,7 +227,7 @@ module.exports = class FileNameFormat {
         this.#bubbleSort();
 
         try {
-            fs.writeFileSync(this.fileNameMapFileName, JSON.stringify(Array.from(this.fileNameMap), undefined, 4));
+            fs.writeFileSync(this.#fileNameMapFileName, JSON.stringify(Array.from(this.#fileNameMap), undefined, 4));
         } catch (err) {
             this.#log(`文件内容写入失败:${err}`);
         }

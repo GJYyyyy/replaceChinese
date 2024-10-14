@@ -20,6 +20,19 @@ const codeFolder = "C:/yourCodeFolder";
 fnFormat.format(resFolder, codeFolder);
 
 /*
+如果需要添加白名单，来阻止一些资源文件被改名
+*/
+fnFormat.setResWhiteList(['a.scss', 'b.png']);
+
+/*
+如果想分开处理资源文件和代码文件，可以这样操作
+*/
+const resFolder = "C:/yourResFolder";
+const codeFolder = "C:/yourCodeFolder";
+fnFormat.formatRes(resFolder);
+fnFormat.formatCode(codeFolder);
+
+/*
 如果只需要格式化资源文件夹里的文件名，可以使用 formatRes 方法
 */
 const resFolder = "C:/yourResFolder";
